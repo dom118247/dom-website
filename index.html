@@ -362,6 +362,40 @@
     opacity:0; animation: fadeUp 0.7s ease 1.4s forwards;
   }
 
+  /* ── Music toggle ── */
+  #music-toggle {
+    position: fixed; bottom: 20px; right: 20px; z-index: 10;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--stone-dark); border: 1px solid var(--panel-border);
+    color: var(--gold); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  #music-toggle:hover { border-color: var(--gold); color: var(--gold-bright); }
+  #music-toggle svg { width: 20px; height: 20px; }
+  #music-toggle .icon-muted { display: none; }
+  #music-toggle.muted .icon-playing { display: none; }
+  #music-toggle.muted .icon-muted { display: block; }
+
+  #music-hint {
+    position: fixed; bottom: 78px; right: 20px; z-index: 10;
+    max-width: 230px; padding: 14px 18px;
+    background: var(--stone-dark); border: 1px solid var(--panel-border);
+    border-radius: 10px; color: var(--parchment);
+    font-family: 'Spectral', serif; font-size: 15px; line-height: 1.45;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    opacity: 0; transform: translateY(6px);
+    animation: fadeUp 0.5s ease 0.6s forwards;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  #music-hint::after {
+    content: ""; position: absolute; bottom: -6px; right: 18px;
+    width: 10px; height: 10px; background: var(--stone-dark);
+    border-right: 1px solid var(--panel-border); border-bottom: 1px solid var(--panel-border);
+    transform: rotate(45deg);
+  }
+  #music-hint.hidden { opacity: 0 !important; }
+
   @media (max-width:860px) {
     .quest-log { grid-template-columns:1fr 1fr; }
     .quest-log a.quest:last-child { grid-column:1 / -1; }
@@ -521,9 +555,16 @@
       </a>
 
     </nav>
-    <footer>Built with Terraform · Hosted on AWS</footer>
+    <footer>Built with Terraform · Hosted on AWS · Music: "Medieval Happy" via TuneTank</footer>
   </section>
 </main>
+
+<audio id="bg-music" src="tunetank-medieval-happy-music-412790.mp3" loop preload="auto"></audio>
+<div id="music-hint">🏰 Click anywhere on the page to hear medieval ambiance music</div>
+<button id="music-toggle" aria-label="Toggle background music" aria-pressed="false">
+  <svg class="icon-playing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke-linecap="round"/></svg>
+</button>
 
 <script>
   (function () {
@@ -588,6 +629,51 @@
       requestAnimationFrame(draw);
     }
     window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+  })();
+
+  (function () {
+    const audio = document.getElementById('bg-music');
+    const toggle = document.getElementById('music-toggle');
+    const hint = document.getElementById('music-hint');
+    let userMuted = false;
+
+    function setMuted(muted) {
+      audio.muted = muted;
+      toggle.classList.toggle('muted', muted);
+      toggle.setAttribute('aria-pressed', String(!muted));
+    }
+
+    function dismissHint() {
+      hint.classList.add('hidden');
+    }
+
+    function unmuteOnFirstInteraction(e) {
+      if (e && e.target && toggle.contains(e.target)) return;
+      if (!userMuted) {
+        setMuted(false);
+        audio.play().catch(() => {});
+      }
+      dismissHint();
+      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
+      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+    }
+
+    audio.muted = true;
+    audio.play().catch(() => {});
+    setMuted(true);
+
+    window.addEventListener('pointerdown', unmuteOnFirstInteraction);
+    window.addEventListener('keydown', unmuteOnFirstInteraction);
+
+    toggle.addEventListener('click', () => {
+      const nextMuted = !audio.muted;
+      userMuted = nextMuted;
+      setMuted(nextMuted);
+      if (!nextMuted) audio.play().catch(() => {});
+      dismissHint();
+      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
+      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+    });
   })();
 </script>
 </body>

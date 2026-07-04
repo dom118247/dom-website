@@ -12,12 +12,9 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  terraform:
-    name: Terraform apply
+  plan:
+    name: Terraform plan
     runs-on: ubuntu-latest
-    outputs:
-      bucket_name: ${{ steps.tf_out.outputs.bucket_name }}
-      distribution_id: ${{ steps.tf_out.outputs.distribution_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,21 +31,22 @@ jobs:
         working-directory: terraform
         run: terraform init
 
-      - name: Terraform Apply
+      - name: Terraform Plan
         working-directory: terraform
-        run: terraform apply -auto-approve
+        run: terraform plan -out=tfplan
 
-      - name: Capture outputs
-        id: tf_out
-        working-directory: terraform
-        run: |
-          echo "bucket_name=$(terraform output -raw s3_bucket_name)" >> "$GITHUB_OUTPUT"
-          echo "distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+          retention-days: 1
 
-  deploy:
-    name: Sync site + invalidate cache
-    needs: terraform
+  apply:
+    name: Terraform apply + sync + invalidate
+    needs: plan
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -57,9 +55,34 @@ jobs:
           role-to-assume: arn:aws:iam::872515271328:role/PipelineRole
           aws-region: ${{ env.AWS_REGION }}
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.7"
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply tfplan
+
+      - name: Capture outputs
+        id: tf_out
+        working-directory: terraform
+        run: |
+          echo "bucket_name=$(terraform output -raw s3_bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
+
       - name: Sync to S3
         run: |
-          aws s3 sync . "s3://${{ needs.terraform.outputs.bucket_name }}" \
+          aws s3 sync . "s3://${{ steps.tf_out.outputs.bucket_name }}" \
             --delete \
             --exclude ".git/*" \
             --exclude ".github/*" \
@@ -68,5 +91,5 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id "${{ needs.terraform.outputs.distribution_id }}" \
+            --distribution-id "${{ steps.tf_out.outputs.distribution_id }}" \
             --paths "/*"

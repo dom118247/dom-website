@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dominic Beard</title>
+<meta name="description" content="Dominic Beard — Junior Cloud DevOps Engineer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0a0e14;
+    --panel-border: #2a3644;
+    --gold: #c9a961;
+    --gold-bright: #e0c584;
+    --parchment: #e8dcc4;
+    --parchment-dim: #9aa5b1;
+    --steel: #4a5a6a;
+    --ember: #8b3a3a;
+    --ember-bright: #b04949;
+    --ember-glow: #d4622f;
+    --blue: #1e4d7a;
+    --blue-bright: #2e7abf;
+    --blue-glow: #3a9ae0;
+    --green: #1a4d2e;
+    --green-bright: #2e8b4f;
+    --green-glow: #3ab56a;
+    --stone-dark: #1c2128;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background:
+      radial-gradient(ellipse 900px 600px at 15% 20%, rgba(212,98,47,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 80%, rgba(139,58,58,0.12), transparent 55%),
+      var(--void);
+    color: var(--parchment);
+    font-family: 'Spectral', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  #embers    { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .vignette  {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(10,14,20,0.78) 100%);
+  }
+
+  .scene {
+    position: relative; z-index: 2;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 48px 20px;
+  }
+
+  /* ── Panel ── */
+  .sheet {
+    position: relative; width: 100%; max-width: 1180px;
+    background:
+      linear-gradient(180deg, rgba(28,33,40,0.94), rgba(15,20,29,0.97)),
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 0 0 1px rgba(201,169,97,0.08), 0 30px 80px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.03);
+    padding: 60px 64px 48px;
+    backdrop-filter: blur(2px);
+    opacity: 0; transform: translateY(18px);
+    animation: sheetRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
+  }
+  @keyframes sheetRise { to { opacity: 1; transform: translateY(0); } }
+
+  .sheet::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    animation: torchBreathe 6s ease-in-out infinite;
+  }
+  @keyframes torchBreathe {
+    0%,100% { box-shadow: inset 0 0 140px rgba(212,98,47,0.08); }
+    50%      { box-shadow: inset 0 0 200px rgba(212,98,47,0.18); }
+  }
+
+  /* ── Corners ── */
+  .corner {
+    position: absolute; width: 26px; height: 26px;
+    border: 2px solid var(--gold); opacity: 0.85;
+    animation: cornerGlow 6s ease-in-out infinite;
+  }
+  .corner.tl { top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .corner.tr { top:-1px; right:-1px; border-left:none; border-bottom:none; animation-delay:1.5s; }
+  .corner.bl { bottom:-1px; left:-1px; border-right:none; border-top:none; animation-delay:3s; }
+  .corner.br { bottom:-1px; right:-1px; border-left:none; border-top:none; animation-delay:4.5s; }
+  @keyframes cornerGlow {
+    0%,100% { opacity:0.75; filter:drop-shadow(0 0 0px var(--gold)); }
+    50%      { opacity:1;    filter:drop-shadow(0 0 5px var(--gold)); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(10px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .eyebrow {
+    text-align:center; font-family:'JetBrains Mono',monospace;
+    font-size:11px; letter-spacing:0.35em; text-transform:uppercase;
+    color:var(--gold); opacity:0; margin-bottom:18px;
+    animation: fadeUp 0.7s ease 0.4s forwards;
+  }
+  h1 {
+    font-family:'Cinzel',serif; font-weight:700;
+    font-size:clamp(36px,6vw,56px); text-align:center; letter-spacing:0.04em;
+    color:var(--parchment); margin-bottom:10px; opacity:0;
+    animation: fadeUp 0.7s ease 0.55s forwards, titleGlow 5s ease-in-out 1.5s infinite;
+  }
+  @keyframes titleGlow {
+    0%,100% { text-shadow:0 0 24px rgba(201,169,97,0.25); }
+    50%      { text-shadow:0 0 34px rgba(201,169,97,0.4), 0 0 60px rgba(212,98,47,0.12); }
+  }
+  .title-line {
+    text-align:center; font-size:15px; color:var(--parchment-dim);
+    font-style:italic; letter-spacing:0.02em; margin-bottom:32px;
+    opacity:0; animation: fadeUp 0.7s ease 0.68s forwards;
+  }
+  .divider {
+    position:relative; height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold) 50%,transparent);
+    opacity:0; margin:0 0 32px;
+    animation: fadeUp 0.7s ease 0.8s forwards;
+  }
+  .divider::before {
+    content:'◆'; position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:#171d27; color:var(--gold); font-size:10px; padding:0 10px;
+  }
+  .bio {
+    text-align:center; font-size:16px; line-height:1.75;
+    color:var(--parchment); max-width:560px; margin:0 auto 44px;
+    opacity:0; animation: fadeUp 0.7s ease 0.92s forwards;
+  }
+
+  /* ── Quest cards ── */
+  .quest-log {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+  }
+  .quest {
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    gap:14px; padding:32px 24px;
+    background:rgba(74,90,106,0.08);
+    border:1px solid var(--panel-border); border-top:3px solid var(--steel);
+    text-decoration:none; color:var(--parchment);
+    position:relative; cursor:pointer; overflow:hidden;
+    opacity:0; animation: fadeUp 0.6s ease forwards;
+    transition: border-top-color 0.25s ease, background 0.3s ease,
+                transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease;
+  }
+  .quest-log a.quest:nth-child(1) { animation-delay:1.05s; }
+  .quest-log a.quest:nth-child(2) { animation-delay:1.15s; }
+  .quest-log a.quest:nth-child(3) { animation-delay:1.25s; }
+
+  .quest:hover {
+    border-top-color:var(--gold);
+    background:rgba(201,169,97,0.09);
+    transform:translateY(-6px) scale(1.02);
+    box-shadow:0 14px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,169,97,0.15);
+  }
+  .quest:focus-visible { outline:2px solid var(--gold-bright); outline-offset:2px; }
+
+  .quest-icon {
+    flex-shrink:0; width:52px; height:52px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--gold); background:rgba(201,169,97,0.08); border-radius:50%;
+    transition:transform 0.35s cubic-bezier(0.16,1,0.3,1), filter 0.3s ease, background 0.3s ease;
+    position:relative; z-index:2;
+  }
+  .quest-icon svg { width:26px; height:26px; }
+  .quest:hover .quest-icon {
+    transform:scale(1.15) rotate(-6deg);
+    filter:drop-shadow(0 0 10px rgba(201,169,97,0.6));
+    background:rgba(201,169,97,0.16);
+  }
+  .quest-text { flex:1; display:flex; flex-direction:column; gap:4px; position:relative; z-index:2; }
+  .quest-label { font-family:'Cinzel',serif; font-size:17px; font-weight:600; letter-spacing:0.02em; color:var(--parchment); }
+  .quest-sub   { font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--parchment-dim); letter-spacing:0.02em; }
+  .quest-marker {
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--steel);
+    letter-spacing:0.1em; transition:transform 0.3s ease, color 0.3s ease;
+    position:relative; z-index:2;
+  }
+  .quest:hover .quest-marker { color:var(--gold); transform:translateY(-3px); }
+
+  .quest.cv { border-top-color:var(--green); background:rgba(26,77,46,0.08); }
+  .quest.cv .quest-icon { background:rgba(58,181,106,0.08); color:var(--green-bright); }
+  .quest.cv:hover {
+    border-top-color:var(--green-bright); background:rgba(26,77,46,0.17);
+    box-shadow:0 14px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(58,181,106,0.2);
+  }
+  .quest.cv:hover .quest-icon {
+    filter:drop-shadow(0 0 10px rgba(58,181,106,0.65)); background:rgba(58,181,106,0.18);
+  }
+  .quest.cv:hover .quest-marker { color:var(--green-bright); }
+
+  .quest.codex { border-top-color:var(--ember); background:rgba(139,58,58,0.08); }
+  .quest.codex .quest-icon { background:rgba(212,98,47,0.1); color:var(--ember-bright); }
+  .quest.codex:hover {
+    border-top-color:var(--ember-bright); background:rgba(139,58,58,0.17);
+    box-shadow:0 14px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,98,47,0.18);
+  }
+  .quest.codex:hover .quest-icon {
+    filter:drop-shadow(0 0 10px rgba(212,98,47,0.65)); background:rgba(212,98,47,0.18);
+  }
+  .quest.codex:hover .quest-marker { color:var(--ember-bright); }
+
+  .quest.guild { border-top-color:var(--blue); background:rgba(30,77,122,0.1); }
+  .quest.guild .quest-icon { background:rgba(58,154,224,0.1); color:var(--blue-bright); }
+  .quest.guild:hover {
+    border-top-color:var(--blue-bright); background:rgba(30,77,122,0.18);
+    box-shadow:0 14px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(58,154,224,0.2);
+  }
+  .quest.guild:hover .quest-icon {
+    filter:drop-shadow(0 0 10px rgba(58,154,224,0.65)); background:rgba(58,154,224,0.18);
+  }
+  .quest.guild:hover .quest-marker { color:var(--blue-bright); }
+
+  /* ══════════════════════════════════════════
+     WEAPON OVERLAY — sits behind content
+  ══════════════════════════════════════════ */
+  .weapon-layer {
+    position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:1;
+  }
+  .weapon-layer svg { position:absolute; inset:0; width:100%; height:100%; }
+
+  /* ── Sword card: two swords swing inward and settle as an X ──
+     Geometry is drawn IN the final X position; each sword pivots
+     around its own hilt (bottom corner) from ±75° to 0°. */
+  .sword-a, .sword-b {
+    transform-box: fill-box;
+    opacity: 0;
+  }
+  .sword-a { transform-origin: 6% 96%; }   /* hilt: bottom-left */
+  .sword-b { transform-origin: 94% 96%; }  /* hilt: bottom-right */
+  .quest:hover .sword-a { animation: swingA 0.5s cubic-bezier(0.34,1.4,0.64,1) forwards; }
+  .quest:hover .sword-b { animation: swingB 0.5s cubic-bezier(0.34,1.4,0.64,1) 0.07s forwards; }
+  @keyframes swingA {
+    0%   { transform: rotate(-75deg); opacity: 0; }
+    25%  { opacity: 1; }
+    100% { transform: rotate(0deg); opacity: 0.85; }
+  }
+  @keyframes swingB {
+    0%   { transform: rotate(75deg); opacity: 0; }
+    25%  { opacity: 1; }
+    100% { transform: rotate(0deg); opacity: 0.85; }
+  }
+
+  /* ── Bow card: nock → draw back → loose → arrow sticks ──
+     The string has two states (straight + drawn V) that cross-fade
+     in sync with the arrow pulling back, then the arrow releases. */
+  .bow-limbs { opacity: 0; transition: opacity 0.25s ease; }
+  .quest:hover .bow-limbs { opacity: 0.7; }
+
+  .string-rest { opacity: 0; }
+  .quest:hover .string-rest { animation: stringRest 1.15s ease forwards; }
+  @keyframes stringRest {
+    0%   { opacity: 0; }
+    12%  { opacity: 0.6; }
+    28%  { opacity: 0; }
+    58%  { opacity: 0; }
+    70%  { opacity: 0.6; }
+    100% { opacity: 0.6; }
+  }
+
+  .string-drawn { opacity: 0; }
+  .quest:hover .string-drawn { animation: stringDrawn 1.15s ease forwards; }
+  @keyframes stringDrawn {
+    0%   { opacity: 0; }
+    24%  { opacity: 0; }
+    34%  { opacity: 0.75; }
+    56%  { opacity: 0.75; }
+    64%  { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  .arrow-shaft {
+    transform-box: fill-box;
+    opacity: 0;
+  }
+  .quest:hover .arrow-shaft { animation: arrowSeq 1.15s ease forwards; }
+  @keyframes arrowSeq {
+    0%   { transform: translateX(0); opacity: 0; }
+    14%  { transform: translateX(0); opacity: 1; }          /* nocked */
+    38%  { transform: translateX(-16px); }                  /* drawing back */
+    56%  { transform: translateX(-16px); }                  /* hold at full draw */
+    68%  { transform: translateX(115px); }                  /* loosed — travels to right wall */
+    100% { transform: translateX(115px); opacity: 0.9; }    /* stuck at edge */
+  }
+
+  /* ── Staff card: staff fades in, spell bolt shoots, then explodes ── */
+  .staff-rod { opacity: 0; transition: opacity 0.25s ease; }
+  .quest:hover .staff-rod { opacity: 0.8; }
+  .spell-bolt {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+  }
+  .quest:hover .spell-bolt {
+    animation: spellFire 0.5s cubic-bezier(0.22,1,0.36,1) 0.22s forwards;
+  }
+  @keyframes spellFire {
+    0%   { transform: translate(-55px, 10px) scale(0.25); opacity: 0; }
+    30%  { opacity: 1; }
+    100% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+  }
+
+  .spell-explode {
+    transform-box: fill-box;
+    transform-origin: center;
+    visibility: hidden;
+  }
+  .quest:hover .spell-explode {
+    animation: spellExplode 0.7s ease-out 0.72s forwards, rainbowRing 0.7s linear 0.72s forwards;
+  }
+  @keyframes spellExplode {
+    0%   { visibility: visible; transform: scale(0.15); opacity: 0.95; }
+    60%  { transform: scale(2.8); opacity: 0.6; }
+    100% { transform: scale(4.2); opacity: 0; visibility: hidden; }
+  }
+  @keyframes rainbowRing {
+    0%   { stroke: #ff4444; }
+    16%  { stroke: #ff9900; }
+    33%  { stroke: #ffee00; }
+    50%  { stroke: #44dd44; }
+    66%  { stroke: #4488ff; }
+    83%  { stroke: #aa44ff; }
+    100% { stroke: #ff44aa; }
+  }
+
+  .spell-shard {
+    transform-box: fill-box;
+    transform-origin: 150px 25px;
+    visibility: hidden;
+  }
+  .quest:hover .spell-shard           { animation: shardFly 0.65s ease-out 0.72s forwards; }
+  .quest:hover .spell-shard.s2        { animation-delay: 0.76s; }
+  .quest:hover .spell-shard.s3        { animation-delay: 0.73s; }
+  .quest:hover .spell-shard.s4        { animation-delay: 0.77s; }
+  .quest:hover .spell-shard.s5        { animation-delay: 0.74s; }
+  .quest:hover .spell-shard.s6        { animation-delay: 0.78s; }
+  .quest:hover .spell-shard.s7        { animation-delay: 0.72s; }
+  .quest:hover .spell-shard.s8        { animation-delay: 0.75s; }
+  @keyframes shardFly {
+    0%   { visibility: visible; opacity: 1; transform: var(--shard-target) scale(0); }
+    25%  { transform: var(--shard-target) scale(1); }
+    100% { opacity: 0; transform: var(--shard-target) scale(1); }
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align:center; margin-top:44px;
+    font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    letter-spacing:0.15em; color:var(--steel); text-transform:uppercase;
+    opacity:0; animation: fadeUp 0.7s ease 1.4s forwards;
+  }
+
+  @media (max-width:860px) {
+    .quest-log { grid-template-columns:1fr 1fr; }
+    .quest-log a.quest:last-child { grid-column:1 / -1; }
+  }
+  @media (max-width:600px) {
+    .quest-log { grid-template-columns:1fr; }
+    .quest-log a.quest:last-child { grid-column:auto; }
+  }
+  @media (max-width:480px) {
+    .sheet { padding:44px 24px 32px; }
+    .quest { padding:24px 18px; }
+    h1 { font-size:34px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .sheet,.corner,h1,.eyebrow,.title-line,.divider,.bio,.quest,footer {
+      animation:none !important; opacity:1 !important; transform:none !important;
+    }
+    .quest { transition:none; }
+    .sword-a,.sword-b,.arrow-shaft,.bow-limbs,.string-rest,.string-drawn,.staff-rod,.spell-bolt,.spell-trail,.spell-explode,.spell-shard {
+      display:none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<canvas id="embers"></canvas>
+<div class="vignette"></div>
+
+<main class="scene">
+  <section class="sheet" role="region" aria-label="Profile">
+    <span class="corner tl" aria-hidden="true"></span>
+    <span class="corner tr" aria-hidden="true"></span>
+    <span class="corner bl" aria-hidden="true"></span>
+    <span class="corner br" aria-hidden="true"></span>
+
+    <p class="eyebrow">∴ A NEW HAND TOUCHES THE BEACON ∴</p>
+    <h1>Dominic Beard</h1>
+    <p class="title-line">— Junior Cloud DevOps Engineer —</p>
+    <div class="divider"></div>
+    <p class="bio">Welcome, traveler. You've found the record of my work, my code, and the ways to reach me. Choose a path below to continue your journey.</p>
+
+    <nav class="quest-log" aria-label="Links">
+
+      <!-- GITHUB — crossed swords -->
+      <a class="quest codex" href="https://github.com/dom118247/" target="_blank" rel="noopener noreferrer">
+        <div class="weapon-layer" aria-hidden="true">
+          <svg viewBox="0 0 200 160" fill="none" preserveAspectRatio="none">
+            <g class="sword-a">
+              <!-- blade: tapered steel -->
+              <polygon points="50,113 54,119 140,42 150,30 137,39" fill="#cfd6de" opacity="0.95"/>
+              <!-- fuller groove -->
+              <line x1="56" y1="112" x2="138" y2="40" stroke="#8f98a3" stroke-width="1.2" opacity="0.6"/>
+              <!-- crossguard -->
+              <line x1="44" y1="107" x2="60" y2="125" stroke="#c9a961" stroke-width="5" stroke-linecap="round"/>
+              <!-- grip -->
+              <line x1="52" y1="116" x2="34" y2="132" stroke="#8b6f47" stroke-width="5" stroke-linecap="round"/>
+              <!-- pommel -->
+              <circle cx="31" cy="135" r="4" fill="#c9a961"/>
+            </g>
+            <g class="sword-b">
+              <polygon points="150,113 146,119 60,42 50,30 63,39" fill="#cfd6de" opacity="0.95"/>
+              <line x1="144" y1="112" x2="62" y2="40" stroke="#8f98a3" stroke-width="1.2" opacity="0.6"/>
+              <line x1="156" y1="107" x2="140" y2="125" stroke="#c9a961" stroke-width="5" stroke-linecap="round"/>
+              <line x1="148" y1="116" x2="166" y2="132" stroke="#8b6f47" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="169" cy="135" r="4" fill="#c9a961"/>
+            </g>
+          </svg>
+        </div>
+        <span class="quest-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.98 5.24.98 11.5c0 4.99 3.24 9.22 7.73 10.72.56.1.77-.24.77-.54 0-.27-.01-1.16-.02-2.1-3.14.68-3.8-1.34-3.8-1.34-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.71-1.5-2.51-.29-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.45.11-3.02 0 0 .95-.3 3.12 1.16a10.8 10.8 0 0 1 2.84-.38c.96 0 1.93.13 2.84.38 2.17-1.47 3.12-1.16 3.12-1.16.61 1.57.23 2.73.11 3.02.72.79 1.16 1.8 1.16 3.04 0 4.35-2.65 5.31-5.17 5.59.4.35.76 1.04.76 2.1 0 1.52-.01 2.74-.01 3.11 0 .3.2.65.78.54C19.76 20.72 23 16.49 23 11.5 23 5.24 18.27.5 12 .5z"/></svg>
+        </span>
+        <span class="quest-text">
+          <span class="quest-label">The Codex</span>
+          <span class="quest-sub">github.com/dom118247</span>
+        </span>
+        <span class="quest-marker">↗</span>
+      </a>
+
+      <!-- LINKEDIN — bow + arrow fires and sticks -->
+      <a class="quest guild" href="https://www.linkedin.com/in/dominic-beard998" target="_blank" rel="noopener noreferrer">
+        <div class="weapon-layer" aria-hidden="true">
+          <svg viewBox="0 0 200 160" fill="none" preserveAspectRatio="none">
+            <g class="bow-limbs">
+              <path d="M25 25 Q54 80 25 135" stroke="#8b6f47" stroke-width="5" stroke-linecap="round" fill="none"/>
+            </g>
+            <line class="string-rest" x1="25" y1="25" x2="25" y2="135" stroke="#c8b89a" stroke-width="1.5" opacity="0.7"/>
+            <polyline class="string-drawn" points="25,25 9,80 25,135" stroke="#c8b89a" stroke-width="1.5" fill="none"/>
+            <g class="arrow-shaft">
+              <line x1="26" y1="80" x2="84" y2="80" stroke="#a0784a" stroke-width="3" stroke-linecap="round"/>
+              <polygon points="92,80 80,74 83,80 80,86" fill="#cfd6de"/>
+              <polygon points="26,80 34,75 33,80" fill="#b5651d" opacity="0.9"/>
+              <polygon points="26,80 34,85 33,80" fill="#b5651d" opacity="0.9"/>
+            </g>
+          </svg>
+        </div>
+        <span class="quest-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </span>
+        <span class="quest-text">
+          <span class="quest-label">The Guild Roster</span>
+          <span class="quest-sub">linkedin.com/in/dominic-beard998</span>
+        </span>
+        <span class="quest-marker">↗</span>
+      </a>
+
+      <!-- CV — staff raises, spell bolt fires out -->
+      <a class="quest cv" href="#" download aria-label="Download CV">
+        <div class="weapon-layer" aria-hidden="true">
+          <svg viewBox="0 0 200 160" fill="none" preserveAspectRatio="none">
+            <defs>
+              <radialGradient id="rainbowBolt" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stop-color="#ffffff"/>
+                <stop offset="25%"  stop-color="#ff88ff"/>
+                <stop offset="50%"  stop-color="#4488ff"/>
+                <stop offset="75%"  stop-color="#44ffaa"/>
+                <stop offset="100%" stop-color="#ffee44"/>
+              </radialGradient>
+            </defs>
+            <g class="staff-rod">
+              <line x1="55" y1="145" x2="95" y2="35" stroke="#c9a961" stroke-width="5" stroke-linecap="round"/>
+              <line x1="55" y1="145" x2="51" y2="155" stroke="#9aa5b1" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="95" cy="35" r="10" stroke="#3a9ae0" stroke-width="2.5" fill="rgba(30,77,122,0.25)"/>
+              <circle cx="95" cy="35" r="5" fill="#2e7abf" opacity="0.85"/>
+              <circle cx="95" cy="35" r="2.5" fill="#a8d4f5"/>
+            </g>
+            <g class="spell-bolt">
+              <circle cx="150" cy="25" r="15" fill="url(#rainbowBolt)" opacity="0.85"/>
+              <circle cx="150" cy="25" r="7"  fill="white" opacity="0.7"/>
+              <line x1="137" y1="12" x2="129" y2="4"  stroke="#ff6644" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+              <line x1="163" y1="12" x2="171" y2="4"  stroke="#ffee44" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+              <line x1="137" y1="38" x2="129" y2="46" stroke="#44ffaa" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+              <line x1="163" y1="38" x2="171" y2="46" stroke="#aa44ff" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+            </g>
+            <!-- explosion ring — colour animated via rainbowRing keyframe -->
+            <circle class="spell-explode" cx="150" cy="25" r="16" fill="none" stroke="#ff4444" stroke-width="4" style="visibility:hidden"/>
+            <!-- 8 rainbow shards flying in all directions -->
+            <line class="spell-shard"    x1="150" y1="25" x2="150" y2="25" stroke="#ff4444" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(0px,-30px);   visibility:hidden"/>
+            <line class="spell-shard s2" x1="150" y1="25" x2="150" y2="25" stroke="#ff9900" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(21px,-21px);  visibility:hidden"/>
+            <line class="spell-shard s3" x1="150" y1="25" x2="150" y2="25" stroke="#ffee00" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(30px,0px);    visibility:hidden"/>
+            <line class="spell-shard s4" x1="150" y1="25" x2="150" y2="25" stroke="#44dd44" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(21px,21px);   visibility:hidden"/>
+            <line class="spell-shard s5" x1="150" y1="25" x2="150" y2="25" stroke="#4488ff" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(0px,30px);    visibility:hidden"/>
+            <line class="spell-shard s6" x1="150" y1="25" x2="150" y2="25" stroke="#6644ff" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(-21px,21px);  visibility:hidden"/>
+            <line class="spell-shard s7" x1="150" y1="25" x2="150" y2="25" stroke="#aa44ff" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(-30px,0px);   visibility:hidden"/>
+            <line class="spell-shard s8" x1="150" y1="25" x2="150" y2="25" stroke="#ff44aa" stroke-width="3" stroke-linecap="round" style="--shard-target:translate(-21px,-21px); visibility:hidden"/>
+          </svg>
+        </div>
+        <span class="quest-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14"/></svg>
+        </span>
+        <span class="quest-text">
+          <span class="quest-label">Claim the Scroll</span>
+          <span class="quest-sub">Download CV — PDF</span>
+        </span>
+        <span class="quest-marker">↓</span>
+      </a>
+
+    </nav>
+    <footer>Built with Terraform · Hosted on AWS</footer>
+  </section>
+</main>
+
+<script>
+  (function () {
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let stars = [], w, h;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      stars = Array.from({ length: Math.floor((w * h) / 9000) }, () => ({
+        x: Math.random()*w, y: Math.random()*h,
+        r: Math.random()*1.3+0.2, baseAlpha: Math.random()*0.6+0.15,
+        phase: Math.random()*Math.PI*2, speed: Math.random()*0.15+0.02
+      }));
+    }
+    function draw(t) {
+      ctx.clearRect(0,0,w,h);
+      for (const s of stars) {
+        const a = reduceMotion ? s.baseAlpha : s.baseAlpha + Math.sin(t*0.001*s.speed+s.phase)*0.2;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(232,220,196,${Math.max(0,a)})`; ctx.fill();
+      }
+      if (!reduceMotion) requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+  })();
+
+  (function () {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+    const canvas = document.getElementById('embers');
+    const ctx = canvas.getContext('2d');
+    let embers = [], w, h;
+    function spawnEmber() {
+      return { x: Math.random()*w, y: h+10, r: Math.random()*3.5+1.5,
+               speed: Math.random()*0.7+0.35, drift: (Math.random()-0.5)*0.6,
+               life: 0, maxLife: Math.random()*350+250, flicker: Math.random()*Math.PI*2 };
+    }
+    function resize() {
+      w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight;
+      embers = Array.from({ length: Math.max(24, Math.floor(w/45)) }, () => {
+        const e = spawnEmber(); e.y = Math.random()*h; e.life = Math.random()*e.maxLife; return e;
+      });
+    }
+    function draw() {
+      ctx.clearRect(0,0,w,h);
+      for (const e of embers) {
+        e.y -= e.speed; e.x += e.drift + Math.sin(e.life*0.02)*0.25;
+        e.life++; e.flicker += 0.12;
+        const lr = e.life/e.maxLife;
+        const fade = lr<0.15 ? lr/0.15 : lr>0.8 ? (1-lr)/0.2 : 1;
+        const alpha = Math.max(0,fade)*(0.75+Math.sin(e.flicker)*0.25);
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        const g = ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*4);
+        g.addColorStop(0,`rgba(255,150,70,${alpha})`);
+        g.addColorStop(0.4,`rgba(212,98,47,${alpha*0.7})`);
+        g.addColorStop(1,'rgba(212,98,47,0)');
+        ctx.fillStyle = g; ctx.fill();
+        if (e.life>=e.maxLife || e.y<-10) Object.assign(e,spawnEmber());
+      }
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+  })();
+</script>
+</body>
+</html>

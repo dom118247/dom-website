@@ -51,6 +51,52 @@
     background: radial-gradient(ellipse at center, transparent 35%, rgba(10,14,20,0.78) 100%);
   }
 
+  /* ── Dragon flyby ── */
+  #dragon-layer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1; pointer-events: none; overflow: hidden;
+  }
+  #dragon {
+    position: absolute; left: 0; top: 10%; width: 230px; height: auto;
+    opacity: 0; will-change: transform, opacity;
+    filter: drop-shadow(0 0 14px rgba(255,140,60,0.7)) drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+  }
+  #dragon .wing { transform-origin: 124px 66px; animation: dragon-flap 0.55s ease-in-out infinite; }
+  #dragon .wing.back { transform-origin: 130px 64px; animation-delay: 0.05s; }
+  #dragon .dragon-fire { animation: fire-flicker 0.3s ease-in-out infinite alternate; transform-origin: 248px 44px; }
+  @keyframes dragon-flap {
+    0%, 100% { transform: scaleY(1) rotate(0deg); }
+    50%      { transform: scaleY(0.45) rotate(8deg); }
+  }
+  @keyframes fire-flicker {
+    0%   { opacity: 0.35; transform: scaleX(0.7); }
+    50%  { opacity: 1;    transform: scaleX(1.15); }
+    100% { opacity: 0.6;  transform: scaleX(0.9); }
+  }
+  @keyframes fly-right {
+    0%   { transform: translate(-20vw, 0) scaleX(1);  opacity: 0; }
+    6%   { opacity: 1; }
+    30%  { transform: translate(25vw, -40px) scaleX(1); }
+    55%  { transform: translate(55vw, 15px) scaleX(1); }
+    80%  { transform: translate(85vw, -25px) scaleX(1); }
+    94%  { opacity: 1; }
+    100% { transform: translate(120vw, 0) scaleX(1);  opacity: 0; }
+  }
+  @keyframes fly-left {
+    0%   { transform: translate(120vw, 0) scaleX(-1);  opacity: 0; }
+    6%   { opacity: 1; }
+    30%  { transform: translate(85vw, -25px) scaleX(-1); }
+    55%  { transform: translate(55vw, 15px) scaleX(-1); }
+    80%  { transform: translate(25vw, -40px) scaleX(-1); }
+    94%  { opacity: 1; }
+    100% { transform: translate(-20vw, 0) scaleX(-1);  opacity: 0; }
+  }
+  #dragon.fly-right { animation: fly-right 20s linear; }
+  #dragon.fly-left  { animation: fly-left 20s linear; }
+  @media (prefers-reduced-motion: reduce) {
+    #dragon-layer { display: none; }
+  }
+
   .scene {
     position: relative; z-index: 2;
     min-height: 100vh;
@@ -288,11 +334,11 @@
   .quest:hover .arrow-shaft { animation: arrowSeq 1.15s ease forwards; }
   @keyframes arrowSeq {
     0%   { transform: translateX(0); opacity: 0; }
-    14%  { transform: translateX(0); opacity: 1; }          /* nocked */
-    38%  { transform: translateX(-16px); }                  /* drawing back */
-    56%  { transform: translateX(-16px); }                  /* hold at full draw */
-    68%  { transform: translateX(115px); }                  /* loosed — travels to right wall */
-    100% { transform: translateX(115px); opacity: 0.9; }    /* stuck at edge */
+    14%  { transform: translateX(0); opacity: 1; }
+    38%  { transform: translateX(-16px); }
+    56%  { transform: translateX(-16px); }
+    68%  { transform: translateX(115px); }
+    100% { transform: translateX(115px); opacity: 0.9; }
   }
 
   /* ── Staff card: staff fades in, spell bolt shoots, then explodes ── */
@@ -425,6 +471,74 @@
 <canvas id="starfield"></canvas>
 <canvas id="embers"></canvas>
 <div class="vignette"></div>
+
+<div id="dragon-layer" aria-hidden="true">
+  <svg id="dragon" viewBox="0 0 280 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fireGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+        <stop offset="0%"   stop-color="#fffbe0"/>
+        <stop offset="20%"  stop-color="#ffe066"/>
+        <stop offset="50%"  stop-color="#ff8800"/>
+        <stop offset="80%"  stop-color="#ff4400"/>
+        <stop offset="100%" stop-color="#d4622f" stop-opacity="0.05"/>
+      </linearGradient>
+    </defs>
+    <!-- Fire breath — large and dramatic -->
+    <g class="dragon-fire">
+      <path d="M248 38 C262 16 278 10 280 20 C270 18 258 26 250 46 Z" fill="url(#fireGrad)"/>
+      <path d="M246 44 C260 34 278 28 280 38 C266 38 254 46 248 58 Z" fill="url(#fireGrad)" opacity="0.9"/>
+      <path d="M245 52 C258 60 270 74 268 88 C258 72 248 62 240 58 Z" fill="url(#fireGrad)" opacity="0.7"/>
+      <path d="M249 40 C260 30 270 28 276 34 C264 33 255 40 250 50 Z" fill="#fffbe0" opacity="0.95"/>
+      <ellipse cx="249" cy="44" rx="7" ry="5" fill="white" opacity="0.55" transform="rotate(-25,249,44)"/>
+    </g>
+    <g fill="#2b1116" stroke="#c9a961" stroke-width="1" stroke-linejoin="round">
+      <!-- Back wing (behind body) -->
+      <path class="wing back" d="M130 64 L95 6 L106 22 L84 28 L99 42 L82 52 L103 62 Z"/>
+      <!-- Tail -->
+      <path d="M78 80 C56 86 32 94 14 106 L18 112 C38 100 62 92 82 87 Z"/>
+      <polygon points="14,106 5,116 20,112"/>
+      <!-- Body (horizontal, elongated) -->
+      <path d="M80 62 L158 56 L170 68 L166 90 L128 98 L88 96 L76 82 Z"/>
+      <!-- Spine spikes -->
+      <polygon points="102,59 106,44 110,59"/>
+      <polygon points="122,55 126,40 130,55"/>
+      <polygon points="142,53 146,39 150,54"/>
+      <polygon points="158,56 162,43 166,57"/>
+      <!-- Hind leg -->
+      <path d="M106 96 L104 118 L98 125 L107 120 L116 112 L118 98 Z"/>
+      <line x1="98" y1="125" x2="90" y2="131" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <line x1="102" y1="127" x2="99" y2="135" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <line x1="109" y1="126" x2="112" y2="134" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <!-- Front leg -->
+      <path d="M144 94 L140 116 L134 123 L143 118 L151 108 L153 96 Z"/>
+      <line x1="134" y1="123" x2="126" y2="129" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <line x1="138" y1="125" x2="135" y2="133" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <line x1="145" y1="123" x2="149" y2="130" stroke="#c9a961" stroke-width="2" stroke-linecap="round"/>
+      <!-- Neck -->
+      <path d="M156 58 C176 42 200 28 222 22 L244 22 L236 40 L214 42 C194 48 176 58 164 70 Z"/>
+      <!-- Upper jaw / head -->
+      <path d="M220 18 L248 18 L252 36 L218 38 Z"/>
+      <!-- Horns -->
+      <polygon points="222,18 228,1 237,20"/>
+      <polygon points="236,18 240,7 247,20"/>
+      <!-- Lower jaw (open) -->
+      <path d="M218 38 L250 36 L254 52 L220 52 Z"/>
+      <!-- Teeth upper -->
+      <polygon points="222,38 224,46 227,38" fill="#ede4c8" stroke="none"/>
+      <polygon points="231,38 233,46 236,38" fill="#ede4c8" stroke="none"/>
+      <polygon points="240,38 242,46 245,38" fill="#ede4c8" stroke="none"/>
+      <!-- Teeth lower -->
+      <polygon points="224,52 226,45 229,52" fill="#ede4c8" stroke="none"/>
+      <polygon points="233,52 235,45 238,52" fill="#ede4c8" stroke="none"/>
+      <!-- Eye -->
+      <circle cx="232" cy="27" r="5" fill="#ff6600" stroke="#c9a961" stroke-width="1"/>
+      <ellipse cx="232" cy="27" rx="2.5" ry="3.5" fill="#1a0800"/>
+      <circle cx="233.5" cy="25.5" r="1.2" fill="white"/>
+      <!-- Front wing (large, dominant bat-wing) -->
+      <path class="wing" d="M124 66 L88 4 L100 20 L78 26 L94 40 L74 50 L92 62 L120 70 Z"/>
+    </g>
+  </svg>
+</div>
 
 <main class="scene">
   <section class="sheet" role="region" aria-label="Profile">
@@ -674,6 +788,32 @@
       window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
       window.removeEventListener('keydown', unmuteOnFirstInteraction);
     });
+  })();
+
+  (function () {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+    const dragon = document.getElementById('dragon');
+
+    function flyDragon() {
+      const dir = Math.random() < 0.5 ? 'right' : 'left';
+      dragon.style.top = (4 + Math.random() * 18) + '%';
+      dragon.classList.remove('fly-right', 'fly-left');
+      void dragon.offsetWidth;
+      dragon.classList.add(dir === 'right' ? 'fly-right' : 'fly-left');
+    }
+
+    function scheduleFlight(isFirst) {
+      const delay = isFirst ? 2000 : 20000 + Math.random() * 40000;
+      setTimeout(flyDragon, delay);
+    }
+
+    dragon.addEventListener('animationend', () => {
+      dragon.classList.remove('fly-right', 'fly-left');
+      scheduleFlight(false);
+    });
+
+    scheduleFlight(true);
   })();
 </script>
 </body>

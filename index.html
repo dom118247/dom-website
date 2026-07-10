@@ -166,14 +166,37 @@
   }
   .title-line {
     text-align:center; font-size:15px; color:var(--parchment-dim);
-    font-style:italic; letter-spacing:0.02em; margin-bottom:32px;
+    font-style:italic; letter-spacing:0.02em; margin-bottom:20px;
     opacity:0; animation: fadeUp 0.7s ease 0.68s forwards;
+  }
+  .worldstate-title {
+    text-align:center; font-family:'JetBrains Mono',monospace;
+    font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--parchment-dim); opacity:0; margin-bottom:6px;
+    animation: fadeUp 0.7s ease 0.72s forwards;
+  }
+  .worldstate {
+    text-align:center; font-family:'JetBrains Mono',monospace;
+    font-size:11px; letter-spacing:0.08em; color:var(--gold);
+    opacity:0; margin-bottom:22px;
+    animation: fadeUp 0.7s ease 0.76s forwards;
+  }
+  .worldnews-title {
+    text-align:center; font-family:'JetBrains Mono',monospace;
+    font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--parchment-dim); opacity:0; margin-bottom:6px;
+    animation: fadeUp 0.7s ease 0.8s forwards;
+  }
+  .worldnews {
+    text-align:center; font-size:13px; font-style:italic;
+    color:var(--gold); max-width:480px; margin:0 auto 32px;
+    opacity:0; animation: fadeUp 0.7s ease 0.84s forwards;
   }
   .divider {
     position:relative; height:1px;
     background:linear-gradient(90deg,transparent,var(--gold) 50%,transparent);
     opacity:0; margin:0 0 32px;
-    animation: fadeUp 0.7s ease 0.8s forwards;
+    animation: fadeUp 0.7s ease 0.9s forwards;
   }
   .divider::before {
     content:'◆'; position:absolute; top:50%; left:50%;
@@ -550,6 +573,10 @@
     <p class="eyebrow">∴ A NEW HAND TOUCHES THE BEACON ∴</p>
     <h1>Dominic Beard</h1>
     <p class="title-line">— Junior Cloud DevOps Engineer —</p>
+    <p class="worldstate-title" aria-hidden="true">Skyrim Forecast Today</p>
+    <p class="worldstate" id="worldstate" aria-hidden="true"></p>
+    <p class="worldnews-title" aria-hidden="true">Skyrim News Today</p>
+    <p class="worldnews" id="worldnews" aria-hidden="true"></p>
     <div class="divider"></div>
     <p class="bio">Welcome, traveler. You've found the record of my work, my code, and the ways to reach me. Choose a path below to continue your journey.</p>
 
@@ -743,6 +770,123 @@
       requestAnimationFrame(draw);
     }
     window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+  })();
+
+  (function () {
+    const el = document.getElementById('worldstate');
+    const newsEl = document.getElementById('worldnews');
+    if (!el) return;
+
+    const NEWS = [
+      'A guard swears he saw a dragon circling the Throat of the World. Again.',
+      'Word around the hold: never provoke a giant near its mammoth herd.',
+      'A courier reports being followed the entire way from Whiterun by an unusually loyal horse.',
+      'The College of Winterhold insists the Eye of Magnus incident was "completely under control."',
+      'A Whiterun guard, formerly an adventurer, is still recovering from that arrow to the knee.',
+      'A merchant in Markarth blames a dragon for his overturned cabbage cart. Guards suspect a loose wheel.',
+      'A bounty hunter warns that the last mudcrab he fought "nearly took his arm off." Again.',
+      'Travelers near the Standing Stones report faint humming. The College insists this is expected.',
+      'Riften guards remind everyone that bribery is, technically, still illegal.',
+      'A farmer outside Riverwood insists his chickens are "plotting something." The Jarl has been notified.',
+      'Solitude\'s town crier has lost his voice announcing yet another execution.',
+      'Hikers confirm the 7,000 Steps to High Hrothgar have not, in fact, gotten any shorter.',
+      'A Thalmor patrol searching for Talos worshippers reportedly interrogated a turnip farm.',
+      'The Dragonborn has not been seen in days. Some blame inventory management.',
+      'The Bannered Mare reports record mead sales this week.',
+      'Guards report shutting down another skooma den. Location unconfirmed, as usual.',
+      'A bard has been banned from three inns for playing "Ragnar the Red" on repeat.',
+      'Hunters report a sabre cat pelt fetching an unusually high price in Falkreath.',
+      'The Dragonborn reportedly tested a new Shout on a chicken. Riverwood has not forgiven him.',
+      'Whiterun\'s Companions still argue over who actually needs a horse anymore.',
+      'The Greybeards confirm someone shouted down the 7,000 Steps just to hear the echo.',
+      'Guards at the Western Watchtower are still cleaning up after that dragon attack.',
+      'The Dragonborn\'s carry weight has reportedly exceeded that of Dragonsreach itself.',
+      'Cultists were spotted near the Windhelm docks again, muttering about someone named Miraak.',
+      'Alduin was seen over the Throat of the World, apparently still sore about losing to a mortal.',
+      'A bard in Solitude is composing a sequel to "The Dragonborn Comes." Nobody asked.',
+      'Locals swear the Dragonborn once stacked cheese wheels to reach the top of a mountain.',
+      'The College of Winterhold insists the title of Arch-Mage is earned, not claimed overnight.',
+      'Skeptics in Riften insist Dragon Shouts can\'t really be heard from the Throat of the World. Believers disagree.',
+      'News in from Whiterun: the Dragonborn has persuaded the Jarl to... capture a dragon in the palace?!'
+    ];
+
+    function pick(pool, offset, seed) {
+      return pool[(seed + offset) % pool.length];
+    }
+
+    const MONTHS = [
+      'Morning Star', 'Sun\'s Dawn', 'First Seed', 'Rain\'s Hand',
+      'Second Seed', 'Midyear', 'Sun\'s Height', 'Last Seed',
+      'Hearthfire', 'Frostfall', 'Sun\'s Dusk', 'Evening Star'
+    ];
+
+    const WEATHER = {
+      winter: [
+        'Snowfall blankets Winterhold and the Pale',
+        'A bitter wind sweeps down from the Throat of the World',
+        'Frost thickens over Eastmarch, ice creeping along the roads',
+        'Clear, frozen skies above Windhelm and the Sea of Ghosts'
+      ],
+      spring: [
+        'Rain drifts over the Rift\'s pine forests near Riften',
+        'Mist rolls off the White River outside Whiterun',
+        'Thaw breaks across Falkreath Hold, snowmelt swelling the streams',
+        'Scattered clouds drift past the Jerall Mountains'
+      ],
+      summer: [
+        'Clear skies stretch wide over Whiterun Hold',
+        'Thunder rolls over the Velothi Mountains in the Reach',
+        'Warm haze rises off Lake Honrich near Riften',
+        'A gentle wind moves through the grasslands of the Rift'
+      ],
+      autumn: [
+        'Fog fills the valley below Ivarstead, at the foot of the Throat of the World',
+        'Rain sweeps in off the sea over Solitude\'s cliffs',
+        'Amber leaves fall through the forests of Falkreath',
+        'Storm clouds gather over Dawnstar and the northern coast'
+      ]
+    };
+
+    function timePhase(hour) {
+      if (hour < 5)  return 'the dead of night';
+      if (hour < 7)  return 'dawn\'s first light';
+      if (hour < 12) return 'morning';
+      if (hour < 14) return 'high sun';
+      if (hour < 18) return 'afternoon';
+      if (hour < 20) return 'dusk';
+      return 'night, torches lit';
+    }
+
+    function ordinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    function dayOfYear(d) {
+      const start = new Date(d.getFullYear(), 0, 0);
+      return Math.floor((d - start) / 86400000);
+    }
+
+    function seasonFor(monthIndex) {
+      if ([11, 0, 1].includes(monthIndex)) return 'winter';
+      if ([2, 3, 4].includes(monthIndex))  return 'spring';
+      if ([5, 6, 7].includes(monthIndex))  return 'summer';
+      return 'autumn';
+    }
+
+    function render() {
+      const now = new Date();
+      const doy = dayOfYear(now);
+      const month = MONTHS[now.getMonth()];
+      const season = seasonFor(now.getMonth());
+      const weather = pick(WEATHER[season], 0, doy);
+      el.textContent = `${ordinal(now.getDate())} of ${month}, ${timePhase(now.getHours())} · ${weather}`;
+      if (newsEl) newsEl.textContent = `"${pick(NEWS, 0, doy)}"`;
+    }
+
+    render();
+    setInterval(render, 60000);
   })();
 
   (function () {
